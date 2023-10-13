@@ -13,8 +13,9 @@ func GetPaginatedRevisionsFromDb() (*paginate.PaginatedResult, error) {
 		Filter:      bson.M{},
 		Collection:  db.Collection(),
 		Context:     context.Background(),
-		CurrentPage: 1,
-		Limit:       5,
+		CurrentPage: 6,
+		Limit:       2,
+		Offset:      0,
 	}
 	var policies []db.Policy
 	result, err := paginate.Paginate(query, &policies)

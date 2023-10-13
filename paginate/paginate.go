@@ -27,6 +27,7 @@ type PaginationQuery struct {
 	Context     context.Context
 	CurrentPage int
 	Limit       int
+	Offset      int
 }
 
 // PaginatedResult
@@ -39,7 +40,8 @@ type PaginatedResult struct {
 func Paginate(query PaginationQuery, resultSlice interface{}) (*PaginatedResult, error) {
 
 	// Calculate total items
-	totalItems, err := query.Collection.CountDocuments(query.Context, query.Filter)
+	countOpts := options.Count().SetSkip(int64(query.Offset))
+	totalItems, err := query.Collection.CountDocuments(query.Context, query.Filter, countOpts)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +64,7 @@ func Paginate(query PaginationQuery, resultSlice interface{}) (*PaginatedResult,
 	pagination.HasNext = query.CurrentPage < pagination.TotalPages
 
 	// Query the database
-	opts := options.Find().SetSkip(int64((query.CurrentPage - 1) * query.Limit)).SetLimit(int64(query.Limit))
+	opts := options.Find().SetSkip(int64(query.Offset + ((query.CurrentPage - 1) * query.Limit))).SetLimit(int64(query.Limit))
 	cursor, err := query.Collection.Find(query.Context, query.Filter, opts)
 	if err != nil {
 		return nil, err
@@ -84,6 +86,10 @@ func Paginate(query PaginationQuery, resultSlice interface{}) (*PaginatedResult,
 		}
 		sliceElem = reflect.Append(sliceElem, reflect.ValueOf(itemPtr).Elem())
 	}
+	if sliceElem.Len() == 0 {
+		sliceElem = reflect.MakeSlice(sliceElem.Type(), 0, 0)
+	}
+
 	if err := cursor.Err(); err != nil {
 		return nil, err
 	}
