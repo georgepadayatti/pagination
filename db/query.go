@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -33,4 +34,13 @@ func CreatePolicy(policy Policy) (Policy, error) {
 		return policy, err
 	}
 	return policy, nil
+}
+
+// ReadFirstPolicy Read first policy
+func ReadFirstPolicy() (Policy, error) {
+
+	var policy Policy
+	err := Collection().FindOne(context.TODO(), bson.M{}).Decode(&policy)
+
+	return policy, err
 }

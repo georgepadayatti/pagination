@@ -1,8 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/georgepadayatti/pagination/db"
@@ -17,18 +15,7 @@ func main() {
 	log.Println("Database session opened")
 
 	// usecase.CreateTenPolicyDocuments()
+	// usecase.GetPaginatedPolicies()
+	usecase.GetPaginatedRevisions()
 
-	result, err := usecase.GetPaginatedRevisionsFromDb()
-	if err != nil {
-		log.Fatalf("Error: %v", err)
-	}
-
-	// Convert struct to JSON with indents.
-	jsonData, err := json.MarshalIndent(result, "", "  ")
-	if err != nil {
-		log.Fatalf("Error marshaling JSON: %v", err)
-	}
-
-	// Convert JSON bytes to string and print.
-	fmt.Println(string(jsonData))
 }

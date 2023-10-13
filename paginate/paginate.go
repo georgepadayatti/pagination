@@ -3,6 +3,7 @@ package paginate
 import (
 	"context"
 	"errors"
+	"math"
 	"reflect"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,51 +21,66 @@ type Pagination struct {
 	HasNext     bool `json:"hasNext"`
 }
 
-// PaginationQuery
-type PaginationQuery struct {
-	Filter      bson.M
-	Collection  *mongo.Collection
-	Context     context.Context
-	CurrentPage int
-	Limit       int
-	Offset      int
+// PaginateDBObjectsQuery
+type PaginateDBObjectsQuery struct {
+	Filter     bson.M
+	Collection *mongo.Collection
+	Context    context.Context
+	Limit      int
+	Offset     int
 }
 
-// PaginatedResult
-type PaginatedResult struct {
+// PaginatedDBResult
+type PaginatedDBResult struct {
 	Items      interface{} `json:"items"`
 	Pagination Pagination  `json:"pagination"`
 }
 
-// Paginate
-func Paginate(query PaginationQuery, resultSlice interface{}) (*PaginatedResult, error) {
+// PaginateDBObjects
+func PaginateDBObjects(query PaginateDBObjectsQuery, resultSlice interface{}) (*PaginatedDBResult, error) {
 
 	// Calculate total items
-	countOpts := options.Count().SetSkip(int64(query.Offset))
-	totalItems, err := query.Collection.CountDocuments(query.Context, query.Filter, countOpts)
+	totalItems, err := query.Collection.CountDocuments(query.Context, query.Filter)
 	if err != nil {
 		return nil, err
 	}
 
+	// Ensure offset is not negative and limit is positive
+	if query.Offset < 0 {
+		query.Offset = 0
+	}
+	if query.Limit <= 0 {
+		query.Limit = 1
+	}
+
+	// Ensure offset is within bounds
+	if query.Offset >= int(totalItems) {
+		query.Offset = int(totalItems) - query.Limit
+	}
+
+	// Calculate pages and selected page based on offset and limit
+	totalPages := int(math.Ceil(float64(totalItems) / float64(query.Limit)))
+	currentPage := (query.Offset / query.Limit) + 1
+
+	// Ensure currentPage is within bounds
+	if currentPage < 1 {
+		currentPage = 1
+	} else if currentPage > totalPages {
+		currentPage = totalPages
+	}
+
 	// Initialize pagination structure
 	pagination := Pagination{
-		CurrentPage: query.CurrentPage,
+		CurrentPage: currentPage,
 		TotalItems:  int(totalItems),
 		Limit:       query.Limit,
+		TotalPages:  totalPages,
+		HasPrevious: currentPage > 1,
+		HasNext:     currentPage < totalPages,
 	}
-
-	// Calculate total pages
-	pagination.TotalPages = int(totalItems) / query.Limit
-	if int(totalItems)%query.Limit > 0 {
-		pagination.TotalPages++
-	}
-
-	// Set HasNext and HasPrevious
-	pagination.HasPrevious = query.CurrentPage > 1
-	pagination.HasNext = query.CurrentPage < pagination.TotalPages
 
 	// Query the database
-	opts := options.Find().SetSkip(int64(query.Offset + ((query.CurrentPage - 1) * query.Limit))).SetLimit(int64(query.Limit))
+	opts := options.Find().SetSkip(int64(query.Offset)).SetLimit(int64(query.Limit))
 	cursor, err := query.Collection.Find(query.Context, query.Filter, opts)
 	if err != nil {
 		return nil, err
@@ -94,8 +110,68 @@ func Paginate(query PaginationQuery, resultSlice interface{}) (*PaginatedResult,
 		return nil, err
 	}
 
-	return &PaginatedResult{
+	return &PaginatedDBResult{
 		Items:      sliceElem.Interface(),
 		Pagination: pagination,
 	}, nil
+}
+
+// PaginateObjectsQuery
+type PaginateObjectsQuery struct {
+	Limit  int
+	Offset int
+}
+
+// PaginatedResult
+type PaginatedResult struct {
+	Items      interface{} `json:"items"`
+	Pagination Pagination  `json:"pagination"`
+}
+
+func PaginateObjects(query PaginateObjectsQuery, toBeSortedItems []interface{}) *PaginatedResult {
+	totalItems := len(toBeSortedItems)
+
+	// Ensure offset is not negative and limit is positive
+	if query.Offset < 0 {
+		query.Offset = 0
+	}
+	if query.Limit <= 0 {
+		query.Limit = 1
+	}
+
+	// Ensure offset is within bounds
+	if query.Offset >= totalItems {
+		query.Offset = totalItems - query.Limit
+	}
+
+	// Calculate pages and selected page based on offset and limit
+	totalPages := int(math.Ceil(float64(totalItems) / float64(query.Limit)))
+	currentPage := (query.Offset / query.Limit) + 1
+
+	// Ensure currentPage is within bounds
+	if currentPage < 1 {
+		currentPage = 1
+	} else if currentPage > totalPages {
+		currentPage = totalPages
+	}
+
+	endIdx := query.Offset + query.Limit
+	if endIdx > totalItems {
+		endIdx = totalItems
+	}
+
+	paginatedItems := toBeSortedItems[query.Offset:endIdx]
+
+	return &PaginatedResult{
+		Items: paginatedItems,
+		Pagination: Pagination{
+			CurrentPage: currentPage,
+			TotalItems:  totalItems,
+			TotalPages:  totalPages,
+			Limit:       query.Limit,
+			HasPrevious: query.Offset > 0,
+			HasNext:     endIdx < totalItems,
+		},
+	}
+
 }

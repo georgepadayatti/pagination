@@ -7,18 +7,26 @@ import (
 	"github.com/georgepadayatti/pagination/db"
 )
 
+// createRevisions creates a specified number (count) of Revision structs,
+// starting their IDs and Snapshots with a base number (baseID).
+func createRevisions(baseID, count int) []db.Revision {
+	revisions := make([]db.Revision, count)
+	for j := 0; j < count; j++ {
+		revisions[j] = db.Revision{
+			ID:                 fmt.Sprintf("RevID-%d-%d", baseID, j),
+			SerialisedSnapshot: fmt.Sprintf("SnapshotData-%d-%d", baseID, j),
+		}
+	}
+	return revisions
+}
+
 // CreateTenPolicyDocuments Create ten policy documents in the database
 func CreateTenPolicyDocuments() {
 	for i := 1; i <= 10; i++ {
 		// Constructing a policy
 		policy := db.Policy{
-			Name: fmt.Sprintf("Policy-%d", i),
-			Revisions: []db.Revision{
-				{
-					ID:                 fmt.Sprintf("RevID-%d", i),
-					SerialisedSnapshot: fmt.Sprintf("SnapshotData-%d", i),
-				},
-			},
+			Name:      fmt.Sprintf("Policy-%d", i),
+			Revisions: createRevisions(i, 10), // creating 10 revisions
 		}
 
 		// Creating the policy
