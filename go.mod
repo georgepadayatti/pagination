@@ -1,4 +1,4 @@
-module github.com/georgepadayatti/pagination/v2
+module github.com/georgepadayatti/pagination
 
 go 1.19
 
