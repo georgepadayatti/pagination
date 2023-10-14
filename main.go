@@ -1,10 +1,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
+	"github.com/georgepadayatti/pagination/cmd"
 	"github.com/georgepadayatti/pagination/db"
-	"github.com/georgepadayatti/pagination/usecase"
 )
 
 func main() {
@@ -14,8 +15,8 @@ func main() {
 	}
 	log.Println("Database session opened")
 
-	// usecase.CreateTenPolicyDocuments()
-	// usecase.GetPaginatedPolicies()
-	usecase.GetPaginatedRevisions()
+	if err := cmd.Execute(); err != nil {
+		fmt.Println(err)
+	}
 
 }
