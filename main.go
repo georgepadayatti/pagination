@@ -5,11 +5,21 @@ import (
 	"log"
 
 	"github.com/georgepadayatti/pagination/cmd"
+	"github.com/georgepadayatti/pagination/config"
 	"github.com/georgepadayatti/pagination/db"
 )
 
 func main() {
-	err := db.Init()
+	err := config.LoadConfig()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+
+	dbUser := config.AppConfig.GetDatabaseUser()
+	dbPassword := config.AppConfig.GetDatabasePassword()
+	dbName := config.AppConfig.GetDatabaseName()
+	collectionName := config.AppConfig.GetCollectionName()
+	err = db.Init(dbUser, dbPassword, dbName, collectionName)
 	if err != nil {
 		panic(err)
 	}

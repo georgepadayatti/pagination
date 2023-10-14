@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 
+	"github.com/georgepadayatti/pagination/config"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -23,7 +24,7 @@ type Policy struct {
 
 // Collection Gets the handles for collection
 func Collection() *mongo.Collection {
-	return DB.Client.Database(DB.Name).Collection(COLLECTION_NAME)
+	return DB.Client.Database(DB.Name).Collection(config.AppConfig.GetCollectionName())
 }
 
 // CreatePolicy Create policy
