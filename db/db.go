@@ -20,7 +20,7 @@ type db struct {
 var DB db
 
 // Init Initialises the database connection
-func Init(dbUser string, dbPassword string, dbName string, collectionName string) error {
+func Init(dbUser string, dbPassword string, dbName string, collectionName ...string) error {
 	dbUrl := fmt.Sprintf("mongodb://%s:%s@localhost:27017/%s", dbUser, dbPassword, dbName)
 	clientOptions := options.Client().ApplyURI(dbUrl)
 
@@ -45,7 +45,15 @@ func Init(dbUser string, dbPassword string, dbName string, collectionName string
 		Name:   dbName,
 	}
 
-	err = initCollection(collectionName, []string{"name"}, true)
+	for i := 0; i < len(collectionName); i++ {
+		err = initCollection(collectionName[i], []string{"name"}, true)
+		if err != nil {
+			log.Printf("Initialising collection: %v", err)
+			return err
+		}
+	}
+
+	err = initCollection("policyAuthors", []string{"name"}, true)
 	if err != nil {
 		log.Printf("Initialising collection: %v", err)
 		return err

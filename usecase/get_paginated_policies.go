@@ -8,16 +8,14 @@ import (
 
 	"github.com/georgepadayatti/pagination/db"
 	"github.com/georgepadayatti/pagination/paginate"
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 func GetPaginatedPolicies() {
 	query := paginate.PaginateDBObjectsQuery{
-		Filter:     bson.M{},
 		Collection: db.Collection(),
 		Context:    context.Background(),
 		Limit:      1,
-		Offset:     0,
+		Offset:     1,
 	}
 	var policies []db.Policy
 	result, err := paginate.PaginateDBObjects(query, &policies)

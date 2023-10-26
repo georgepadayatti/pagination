@@ -8,7 +8,6 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Pagination
@@ -23,7 +22,7 @@ type Pagination struct {
 
 // PaginateDBObjectsQuery
 type PaginateDBObjectsQuery struct {
-	Filter     bson.M
+	Pipeline   []bson.M
 	Collection *mongo.Collection
 	Context    context.Context
 	Limit      int
@@ -40,10 +39,19 @@ type PaginatedDBResult struct {
 func PaginateDBObjects(query PaginateDBObjectsQuery, resultSlice interface{}) (*PaginatedDBResult, error) {
 
 	// Calculate total items
-	totalItems, err := query.Collection.CountDocuments(query.Context, query.Filter)
+	cursor, err := query.Collection.Aggregate(context.TODO(), query.Pipeline)
 	if err != nil {
 		return nil, err
 	}
+	defer cursor.Close(context.TODO())
+
+	var dbObjectsForCount []interface{}
+	err = cursor.All(context.TODO(), &dbObjectsForCount)
+	if err != nil {
+		return nil, err
+	}
+
+	totalItems := len(dbObjectsForCount)
 
 	// Ensure offset is not negative and limit is positive
 	if query.Offset < 0 {
@@ -79,13 +87,14 @@ func PaginateDBObjects(query PaginateDBObjectsQuery, resultSlice interface{}) (*
 		HasNext:     currentPage < totalPages,
 	}
 
+	pipelineWithSkipAndLimitStages := append(query.Pipeline, bson.M{"$skip": query.Offset}, bson.M{"$limit": query.Limit})
+
 	// Query the database
-	opts := options.Find().SetSkip(int64(query.Offset)).SetLimit(int64(query.Limit))
-	cursor, err := query.Collection.Find(query.Context, query.Filter, opts)
+	cursor2, err := query.Collection.Aggregate(context.TODO(), pipelineWithSkipAndLimitStages)
 	if err != nil {
 		return nil, err
 	}
-	defer cursor.Close(query.Context)
+	defer cursor2.Close(context.TODO())
 
 	// Decode items
 	sliceValue := reflect.ValueOf(resultSlice)
@@ -95,9 +104,9 @@ func PaginateDBObjects(query PaginateDBObjectsQuery, resultSlice interface{}) (*
 	sliceElem := sliceValue.Elem()
 	itemTyp := sliceElem.Type().Elem()
 
-	for cursor.Next(query.Context) {
+	for cursor2.Next(query.Context) {
 		itemPtr := reflect.New(itemTyp).Interface()
-		if err := cursor.Decode(itemPtr); err != nil {
+		if err := cursor2.Decode(itemPtr); err != nil {
 			return nil, err
 		}
 		sliceElem = reflect.Append(sliceElem, reflect.ValueOf(itemPtr).Elem())
@@ -106,7 +115,7 @@ func PaginateDBObjects(query PaginateDBObjectsQuery, resultSlice interface{}) (*
 		sliceElem = reflect.MakeSlice(sliceElem.Type(), 0, 0)
 	}
 
-	if err := cursor.Err(); err != nil {
+	if err := cursor2.Err(); err != nil {
 		return nil, err
 	}
 

@@ -18,8 +18,9 @@ func main() {
 	dbUser := config.AppConfig.GetDatabaseUser()
 	dbPassword := config.AppConfig.GetDatabasePassword()
 	dbName := config.AppConfig.GetDatabaseName()
-	collectionName := config.AppConfig.GetCollectionName()
-	err = db.Init(dbUser, dbPassword, dbName, collectionName)
+	policyCollection := config.AppConfig.GetPolicyCollectionName()
+	policyAuthorCollection := config.AppConfig.GetPolicyAuthorCollectionName()
+	err = db.Init(dbUser, dbPassword, dbName, policyCollection, policyAuthorCollection)
 	if err != nil {
 		panic(err)
 	}

@@ -7,7 +7,7 @@ import (
 
 var populateDbCmd = &cobra.Command{
 	Use:   "populate-db",
-	Short: "Populate DB with 10 policies",
+	Short: "Populate DB with 10 policies and policy authors",
 	Args:  cobra.ExactArgs(0),
 	Run:   populateDbCmdHandler,
 }

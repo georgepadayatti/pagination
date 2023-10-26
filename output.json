@@ -1,0 +1,37 @@
+{
+  "items": [
+    {
+      "id": "653a8d291ae8ac60a966cb23",
+      "timestamp": "2062-06-02T09:52:17Z",
+      "policyId": "653a8d291ae8ac60a966cb1b"
+    },
+    {
+      "id": "653a8d291ae8ac60a966cb21",
+      "timestamp": "2060-08-01T16:34:11Z",
+      "policyId": "653a8d291ae8ac60a966cb1b"
+    },
+    {
+      "id": "653a8d291ae8ac60a966cb25",
+      "timestamp": "2027-12-29T22:55:20Z",
+      "policyId": "653a8d291ae8ac60a966cb1b"
+    },
+    {
+      "id": "653a8d291ae8ac60a966cb1d",
+      "timestamp": "2016-04-30T03:32:31Z",
+      "policyId": "653a8d291ae8ac60a966cb1b"
+    },
+    {
+      "id": "653a8d291ae8ac60a966cb1f",
+      "timestamp": "1999-03-20T03:10:21Z",
+      "policyId": "653a8d291ae8ac60a966cb1b"
+    }
+  ],
+  "pagination": {
+    "currentPage": 1,
+    "totalItems": 5,
+    "totalPages": 1,
+    "limit": 5,
+    "hasPrevious": false,
+    "hasNext": false
+  }
+}

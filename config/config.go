@@ -6,7 +6,8 @@ import (
 
 // Collection
 type Collection struct {
-	Name string `mapstructure:"name"`
+	Policies      string `mapstructure:"policies"`
+	PolicyAuthors string `mapstructure:"policyAuthors"`
 }
 
 // Database
@@ -42,9 +43,14 @@ func (c *Config) GetDatabaseName() string {
 	return c.Database.Name
 }
 
-// GetCollectionName returns the collection name
-func (c *Config) GetCollectionName() string {
-	return c.Database.Collection.Name
+// GetPolicyCollectionName returns the collection name
+func (c *Config) GetPolicyCollectionName() string {
+	return c.Database.Collection.Policies
+}
+
+// GetPolicyAuthorCollectionName returns the collection name
+func (c *Config) GetPolicyAuthorCollectionName() string {
+	return c.Database.Collection.PolicyAuthors
 }
 
 var AppConfig Config

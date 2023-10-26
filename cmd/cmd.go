@@ -17,4 +17,5 @@ func init() {
 	rootCmd.AddCommand(populateDbCmd)
 	rootCmd.AddCommand(getPaginatedPoliciesCmd)
 	rootCmd.AddCommand(getPaginatedRevisionsCmd)
+	rootCmd.AddCommand(getPoliciesByNameCmd)
 }
