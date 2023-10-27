@@ -59,6 +59,24 @@ func Init(dbUser string, dbPassword string, dbName string, collectionName ...str
 		return err
 	}
 
+	err = initCollection("revisions1", []string{"name"}, true)
+	if err != nil {
+		log.Printf("Initialising collection: %v", err)
+		return err
+	}
+
+	err = initCollection("dataAgreements1", []string{"name"}, true)
+	if err != nil {
+		log.Printf("Initialising collection: %v", err)
+		return err
+	}
+
+	err = initCollection("dataAgreementRecords1", []string{"name"}, true)
+	if err != nil {
+		log.Printf("Initialising collection: %v", err)
+		return err
+	}
+
 	return nil
 }
 

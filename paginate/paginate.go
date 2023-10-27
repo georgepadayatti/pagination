@@ -3,6 +3,7 @@ package paginate
 import (
 	"context"
 	"errors"
+	"log"
 	"math"
 	"reflect"
 
@@ -53,6 +54,20 @@ func PaginateDBObjects(query PaginateDBObjectsQuery, resultSlice interface{}) (*
 
 	totalItems := len(dbObjectsForCount)
 
+	if totalItems == 0 {
+		return &PaginatedDBResult{
+			Items: []string{},
+			Pagination: Pagination{
+				CurrentPage: 1,
+				TotalItems:  0,
+				Limit:       query.Limit,
+				TotalPages:  1,
+				HasPrevious: false,
+				HasNext:     false,
+			},
+		}, nil
+	}
+
 	// Ensure offset is not negative and limit is positive
 	if query.Offset < 0 {
 		query.Offset = 0
@@ -60,6 +75,8 @@ func PaginateDBObjects(query PaginateDBObjectsQuery, resultSlice interface{}) (*
 	if query.Limit <= 0 {
 		query.Limit = 1
 	}
+
+	log.Printf("Current totalItems: %d", totalItems)
 
 	// Ensure offset is within bounds
 	if query.Offset >= int(totalItems) {

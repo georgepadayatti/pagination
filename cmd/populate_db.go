@@ -7,11 +7,11 @@ import (
 
 var populateDbCmd = &cobra.Command{
 	Use:   "populate-db",
-	Short: "Populate DB with 10 policies and policy authors",
+	Short: "Populate DB with dummy records",
 	Args:  cobra.ExactArgs(0),
 	Run:   populateDbCmdHandler,
 }
 
 func populateDbCmdHandler(cmd *cobra.Command, args []string) {
-	usecase.CreateTenPolicyDocuments()
+	usecase.CreateDataAgreement()
 }

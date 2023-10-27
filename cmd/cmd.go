@@ -18,4 +18,5 @@ func init() {
 	rootCmd.AddCommand(getPaginatedPoliciesCmd)
 	rootCmd.AddCommand(getPaginatedRevisionsCmd)
 	rootCmd.AddCommand(getPoliciesByNameCmd)
+	rootCmd.AddCommand(getPaginatedDaRecordsCmd)
 }
